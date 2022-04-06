@@ -1,79 +1,44 @@
 
-data "aws_ami" "golden_ami" {
-  
-  most_recent      = true
-  owners           = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-kernel-5.10-hvm-*"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+resource "aws_vpc" D-Ammar {
+  cidr_block = "10.0.0.0/16"
+  enable_dns_support = false
+  enable_dns_hostnames = false
 }
 
-
-resource "random_integer" "random" {
-min = 1
-max = 100
+resource "aws_subnet" public_subnet1 {
+  vpc_id     = local.vpc_id
+  cidr_block = var.pub_subnet_cidr[0] 
+  map_public_ip_on_launch = true 
+  availability_zone = var.pub_az_cidr[0]
 }
 
-data "aws_ssm_parameter" "ami" {
-  name = "latest_golden-ami"
+resource "aws_subnet" public_subnet2 {
+  vpc_id     = local.vpc_id
+  cidr_block = var.pub_subnet_cidr[1]
+  map_public_ip_on_launch = true 
+  availability_zone = var.pub_az_cidr[1]
 }
 
-resource "aws_security_group" "allow_http" {
-  name        = "allow_http"
-  description = "Allow HTTP inbound traffic"
-  #vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description = "HTTP from VPC"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = var.ip_address
-
-  }
-  ingress {
-    description = "SSH from VPC"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = var.ip_address
-
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-
-  }
+resource "aws_subnet" private_subnet1 {
+  vpc_id     = local.vpc_id
+  cidr_block = var.priv_subnet_cidr[0]
+  availability_zone = var.priv_az_cidr[0]
 }
 
-# count is mostly used for conditions
-
-resource "aws_instance" "web" {
-  count = var.create_instance ? 1 : 0
-  ami                         = data.aws_ssm_parameter.ami.value
-  instance_type               = var.instance_type
-  associate_public_ip_address = var.assign_public_ip
-
-  vpc_security_group_ids = [aws_security_group.allow_http.id]
-
-  tags_all = {
-    Name = "web-${random_integer.random.id}"
-    
-  }
+resource "aws_subnet" private_subnet2 {
+  vpc_id     = local.vpc_id
+  cidr_block = var.priv_subnet_cidr[1]
+  availability_zone = var.priv_az_cidr[1]
 }
 
+resource "aws_subnet" database_subnet1 {
+  vpc_id     = local.vpc_id
+  cidr_block = var.db_subnet_cidr[0] 
+  availability_zone = var.db_az_cidr[0]
+}
 
+resource "aws_subnet" database_subnet2 {
+  vpc_id     = local.vpc_id
+  cidr_block = var.db_subnet_cidr[1]
+  availability_zone = var.db_az_cidr[1]
+}

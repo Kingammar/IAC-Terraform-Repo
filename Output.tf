@@ -1,5 +1,6 @@
 
 # Fetching just one pub ip from the list
+/*
 output "public_ip" {
   description = "public ip"
   value       = aws_instance.web[0].public_ip
@@ -28,3 +29,4 @@ output "ec2_arn" {
   value       = [for arn in aws_instance.web: arn.arn]
   sensitive   = false
 }
+*/
