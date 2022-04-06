@@ -21,6 +21,11 @@
 }
 */
 
+resource "random_integer" "random" {
+min = 1
+max = 100
+}
+
 data "aws_ssm_parameter" "ami" {
   name = "latest_golden-ami"
 }
@@ -35,7 +40,7 @@ resource "aws_security_group" "allow_http" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["104.60.131.99/32"]
+    cidr_blocks = var.ip_address
 
   }
   ingress {
@@ -43,7 +48,7 @@ resource "aws_security_group" "allow_http" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["104.60.131.99/32"]
+    cidr_blocks = var.ip_address
 
   }
   egress {
@@ -57,10 +62,17 @@ resource "aws_security_group" "allow_http" {
 
 
 resource "aws_instance" "web" {
+  count = var.create_instance ? 1 : 0
   ami                         = data.aws_ssm_parameter.ami.value
   instance_type               = var.instance_type
-  associate_public_ip_address = true
+  associate_public_ip_address = var.assign_public_ip
 
   vpc_security_group_ids = [aws_security_group.allow_http.id]
 
+  tags = {
+    Name = "web-${random_integer.random.id}"
+    
+  }
 }
+
+
