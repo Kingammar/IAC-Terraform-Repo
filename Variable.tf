@@ -2,9 +2,9 @@
 
 
 variable "instance_type" {
-  type        = string
+  type        = list
   description = "ec2 instance type"
-  default     = "t3.micro"
+  default     = ["t3.micro", "t2.micro", "t2.xlarge"]
 }
 
 variable "aws_region" {
